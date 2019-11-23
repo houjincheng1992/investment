@@ -78,10 +78,8 @@ def stock_list_data(pro, engine):
         all_list.append(basic_data)
     redis_conn = get_redis_conn(pool_redis)
     for basic_data in all_list:
-        basic_data_str = json.dumps(basic_data)
-
+        update_basic_data = "\t".join(basic_data)
         pre_basic_data = redis_conn.hget("stock_basic", basic_data[0])
-        update_basic_data = json.dumps(basic_data)
         if pre_basic_data == update_basic_data:
             continue
         redis_conn.hset("stock_basic", basic_data[0], json.dumps(basic_data))
