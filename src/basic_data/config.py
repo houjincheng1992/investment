@@ -6,3 +6,7 @@ redis_config = {
     "db" : 1,
     "max_connections" : 10
 }
+
+basic_data_config = {
+    "stock_basic_path" : "/home/work/investment/data/stock_basic"
+}

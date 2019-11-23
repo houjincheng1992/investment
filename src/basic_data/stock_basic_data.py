@@ -5,11 +5,12 @@
     todo:增量更新
 '''
 
-import redis
 import tushare as ts
+from config import basic_data_config
 from redis_pool import pool_redis
 from redis_pool import get_redis_conn
 import json
+import time
 # from sqlalchemy import create_engine
 
 
@@ -83,6 +84,11 @@ def stock_list_data(pro, engine):
         if pre_basic_data == update_basic_data:
             continue
         redis_conn.hset("stock_basic", basic_data[0], update_basic_data)
+
+    basic_data_path = "%s/stock_basic_%s.log" %(basic_data_config["stock_basic_path"], time.strftime('%Y-%m-%d', time.localtime(time.time())))
+    with open(basic_data_config["stock_basic_path"], "w+") as f:
+        for basic_data in all_list:
+            f.write("\t".join(basic_data))
     return
 
     
