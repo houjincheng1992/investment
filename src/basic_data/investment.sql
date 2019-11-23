@@ -1,0 +1,1 @@
+create table stock_basic (id int(11), ts_code varchar(20), symbol varchar(20), name varchar(100), area varchar(100), industry varchar(100), fullname varchar(300), enname varchar(300), market varchar(100), exchange varchar(20), curr_type varchar(50), list_status varchar(50), list_date date, delist_date date, is_hs varchar(20));
