@@ -10,3 +10,10 @@ redis_config = {
 basic_data_config = {
     "stock_basic_path" : "/home/work/investment/data/stock_basic"
 }
+
+mysql_config = {
+    "user" : "root",
+    "password" : "12345Ssdlh",
+    "database" : "investment",
+    "charset" : "utf8"
+}

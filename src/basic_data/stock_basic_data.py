@@ -5,8 +5,13 @@
     todo:增量更新
 '''
 
+from pypika import Table, MySQLQuery
+from pypika import Tuple
+from pypika.terms import Values
+import pymysql
 import tushare as ts
 from config import basic_data_config
+from config import mysql_config
 from redis_pool import pool_redis
 from redis_pool import get_redis_conn
 import json
@@ -78,20 +83,36 @@ def stock_list_data(pro, engine):
         basic_data = ["" if data.iloc[index][field] == None else data.iloc[index][field] for field in StockCompanyData.get_fields()]
         all_list.append(basic_data)
     redis_conn = get_redis_conn(pool_redis)
+
+    conn = pymysql.connect(
+                user = mysql_config["user"],
+                password = mysql_config["password"],
+                database = mysql_config["database"],
+                charset = mysql_config["charset"])
+    cursor = conn.cursor()
     for basic_data in all_list:
         update_basic_data = "\t".join(basic_data)
         pre_basic_data = redis_conn.hget("stock_basic", basic_data[0])
         if pre_basic_data == update_basic_data:
             continue
         redis_conn.hset("stock_basic", basic_data[0], update_basic_data)
+        stock_basic_table = Table("stock_basic")
+        sql = MySQLQuery.into(stock_basic_table).insert(basic_data).on_duplicate_key_update(
+            Tuple(stock_basic_table.symbol, stock_basic_table.name, stock_basic_table.area, stock_basic_table.industry, stock_basic_table.fullname, stock_basic_table.enname, stock_basic_table.market, stock_basic_table.exchange, stock_basic_table.curr_type, stock_basic_table.list_status, stock_basic_table.list_date, stock_basic_table.delist_date, stock_basic_table.is_hs),
+            Tuple(Values(stock_basic_table.symbol, stock_basic_table.area, stock_basic_table.industry, stock_basic_table.fullname, stock_basic_table.enname, stock_basic_table.market, stock_basic_table.exchange, stock_basic_table.curr_type, stock_basic_table.list_status, stock_basic_table.list_date, stock_basic_table.delist_date, stock_basic_table.is_hs))
+        )
+        cursor.execute(sql, )
+    conn.commit()
+    cursor.close()
+    conn.close()
+
 
     basic_data_path = "%s/stock_basic_%s.log" %(basic_data_config["stock_basic_path"], time.strftime('%Y-%m-%d', time.localtime(time.time())))
     with open(basic_data_path, "w+") as f:
         for basic_data in all_list:
             f.write("\t".join(basic_data))
+            f.write("\n")
     return
-
-    
 
 def stock_on_charge_date(pro, engine):
     """
